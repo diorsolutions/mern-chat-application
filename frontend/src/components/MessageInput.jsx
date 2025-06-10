@@ -11,7 +11,7 @@ const MessageInput = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const fileInputRef = useRef(null);
-  const { sendMessage } = useChatStore();
+  const { sendMessage, replyTo, setReplyTo } = useChatStore();
   const emojiPickerRef = useRef(null);
 
   useEffect(() => {
@@ -57,11 +57,13 @@ const MessageInput = () => {
       await sendMessage({
         text: text.trim(),
         image: imagePreview,
+        replyTo: replyTo?._id,
       });
 
       // Clear form
       setText("");
       setImagePreview(null);
+      setReplyTo(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (error) {
       console.error("Failed to send message:", error);
@@ -70,6 +72,17 @@ const MessageInput = () => {
 
   return (
     <div className="p-4 w-full">
+      {replyTo && (
+        <div className="mb-2 p-2 rounded-lg bg-base-200 text-sm flex justify-between items-center">
+          <div>
+            <p className="font-bold">Replying to {replyTo.senderId === useChatStore.getState().selectedUser._id ? useChatStore.getState().selectedUser.fullName : "You"}</p>
+            <p className="truncate">{replyTo.text}</p>
+          </div>
+          <button onClick={() => setReplyTo(null)}>
+            <X size={16} />
+          </button>
+        </div>
+      )}
       {imagePreview && (
         <div className="mb-3 flex items-center gap-2">
           <div className="relative">
